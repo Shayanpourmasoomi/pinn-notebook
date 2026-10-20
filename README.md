@@ -1,28 +1,44 @@
-# Physics-Informed Neural Network (PINN) — Jupyter Notebook
+# Physics-Informed Neural Networks for a Coupled Mass–Spring System
 
-This repository contains a Jupyter Notebook implementing a **Physics-Informed Neural Network (PINN)** to solve differential equations by combining neural networks with physical laws.
+A **physics-informed neural network (PINN)** in PyTorch that solves the equations of motion of a chain of masses connected by springs. The network is trained without ground-truth trajectories: the governing differential equations and the initial conditions enter the loss directly. Its solution is then compared with a high-precision numerical ODE solver.
 
-## File
-- `pinn_Notebook.ipynb` — main notebook
+<p align="center">
+  <img src="figures/training_loss.png" width="49%" alt="Training and validation loss">
+  <img src="figures/pinn_vs_ode_solver.png" width="49%" alt="PINN prediction vs ODE solver">
+</p>
 
-## Overview
-Physics-Informed Neural Networks (PINNs) are neural networks trained not only on data, but also constrained by the underlying **physical equations** (e.g. differential equations).  
-Instead of relying purely on labeled data, the model minimizes a loss function that enforces the governing equations.
+## Approach
 
-This notebook demonstrates:
-- Defining a neural network for function approximation
-- Enforcing physical constraints through the loss function
-- Solving differential equations using PINNs
+| Component | Implementation |
+|---|---|
+| **System** | N masses on a line, coupled by springs; second-order ODEs for each displacement $x_i(t)$ |
+| **Network** | Feed-forward network mapping time $t$ to the vector of positions $(x_1(t), \dots, x_N(t))$ |
+| **Physics loss** | ODE residuals at collocation points, with second derivatives computed by automatic differentiation |
+| **Constraints** | Initial-position and initial-velocity penalties |
+| **Benchmark** | Reference trajectories from a high-precision ODE solver (SciPy) |
 
-## Key Concepts
-- Neural network approximation of continuous functions
-- Automatic differentiation
-- Physics-based loss functions
-- Training with boundary and initial conditions
+## Findings
 
-## Requirements
-Python 3.9+ recommended.
+The loss falls quickly and stays low after the first few hundred epochs. The PINN reproduces the initial dynamics of each mass well but drifts from the reference solution in amplitude and phase over longer horizons. This is a known limitation of plain PINNs on oscillatory systems, and the comparison plot makes it easy to see where the approximation breaks down.
 
-Install dependencies:
+## Repository structure
+
+```
+pinn_coupled_mass_spring.ipynb   # data generation, model, physics loss, training, evaluation
+figures/                         # selected figures exported from the notebook
+```
+
+## Reproducing
+
 ```bash
-pip install numpy matplotlib torch jupyter
+pip install torch numpy scipy matplotlib
+```
+
+A GPU speeds up training but is not required.
+
+## Context
+
+Developed for graduate machine-learning coursework at Sharif University of Technology (2025).
+
+---
+**Shayan Pourmasoomi** · MSc Economics, Sharif University of Technology · [LinkedIn](https://www.linkedin.com/in/shayan-pourmasoomi-8b6206389)
